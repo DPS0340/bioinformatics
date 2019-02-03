@@ -41,31 +41,48 @@ jumper* nextgen(jumper arr[], int len, int location) {
 	}
 	for (int i = 0; i < len; i++) {
 		if (result[i].location < location) {
-			result[i].angle = result[i].angle | result[rand() % len].angle;
+			result[i].mass = result[rand() % len].mass & result[rand() % len].mass;
 		}
 		else {
-			result[i].angle = result[i].angle & result[rand() % len].angle;
-		}
-		if (result[i].location < location) {
-			result[i].mass = result[i].mass & result[rand() % len].mass;
-		}
-		else {
-			result[i].mass = result[i].mass | result[rand() % len].mass;
-		}
-		if (result[i].location < location) {
-			result[i].speed = result[i].speed | result[rand() % len].speed;
-		}
-		else {
-			result[i].speed = result[i].speed & result[rand() % len].speed;
+			result[i].mass = result[rand() % len].mass | result[rand() % len].mass;
 		}
 		if (result[i].mass == 0) {
-			result[i].mass = rand() % 90 + 10;
+			result[i].mass = rand() % 95 + 5;
+		}
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
+		if (result[i].location < location) {
+			result[i].speed = result[rand() % len].speed | result[rand() % len].speed;
+		}
+		else {
+			result[i].speed = result[rand() % len].speed & result[rand() % len].speed;
 		}
 		if (result[i].speed == 0) {
-			result[i].speed = (rand() % 100000) + 100;
+			result[i].speed = (rand() % 1000000) + 100;
 		}
-		if (result[i].angle == 0) {
-			result[i].angle = (rand() % 45) + 1;
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
+		if (rand() % 50 == 0) {
+			int flag = rand() % 5;
+			if (flag == 0) {
+				result[i].angle = result[rand() % len].angle;
+			}
+			else if (flag == 1) {
+				result[i].mass = result[i].angle | result[rand() % len].mass;
+			}
+			else if (flag == 2) {
+				result[i].speed = result[i].angle | result[rand() % len].speed;
+			}
+			else if (flag == 3) {
+				result[i].mass = result[i].angle & result[rand() % len].mass;
+			}
+			else if (flag == 4) {
+				result[i].speed = result[i].angle & result[rand() % len].speed;
+			}
+		}
+		if (result[i].mass == 0) {
+			result[i].mass = rand() % 95 + 5;
+		}
+		if (result[i].speed == 0) {
+			result[i].speed = (rand() % 1000000) + 100;
 		}
 		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
 	}
@@ -73,22 +90,22 @@ jumper* nextgen(jumper arr[], int len, int location) {
 }
 
 int main() {
-	int n = 2048;
+	int n = 1024 * 8;
 	srand(time(NULL));
 	jumper* jumpers = new jumper[n];
-	int location = rand() % 10000 + 100;
+	int location = rand() % 10000 + 5000;
 	cout << "목적지: " << location << "m" << endl;
 	for (int i = 0; i < n; i++) {
-		jumpers[i].mass = rand() % 90 + 10;
+		jumpers[i].mass = rand() % 95 + 5;
 		jumpers[i].angle = (rand() % 45) + 1;
-		jumpers[i].speed = (rand() % 100000) + 100;
+		jumpers[i].speed = (rand() % 1000000) + 100;
 		jumpers[i].location = jumpers[i].speed / jumpers[i].mass * jumpers[i].speed / jumpers[i].mass * sin(2 * jumpers[i].angle * PI / 180) / G;
 	}
 	for (int half = n / 2; half != 0; half /= 2) {
 		jumpers = nextgen(jumpers, half, location);
+		/*
 		double x, y;
 		x = y = 0.0;
-		/*
 		for (int i = 0; i < half; i++) {
 			cout << i + 1 << "'th" << endl;
 			if (jumpers[i].mass == 0) {
