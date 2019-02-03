@@ -14,12 +14,12 @@ struct jumper {
 	double location;
 };
 
-int abs(int a, int b) {
+double abs(double a, double b) {
 	return a > b ? a - b : b - a;
 }
 
 jumper* nextgen(jumper arr[], int len, int location) {
-	jumper* result = (jumper*)malloc(sizeof(jumper) * len);
+	jumper* result = new jumper[len];
 	for (int i = 0; i < len; i++) {
 		if (arr[i].location < location) {
 			result[i].angle = arr[i].angle | arr[rand() % len].angle;
@@ -40,12 +40,12 @@ jumper* nextgen(jumper arr[], int len, int location) {
 			result[i].speed = arr[i].speed & arr[rand() % len].speed;
 		}
 		if (result[i].mass == 0) {
-			result[i].mass = rand() % 70 + 30;
+			result[i].mass = rand() % 80 + 10;
 		}
 		if (result[i].speed == 0) {
-			result[i].speed = rand() % 1000;
+			result[i].speed = (rand() % 10000) + 1;
 		}
-		result[i].location = result[i].speed / result[i].mass / 10.0 * result[i].speed / result[i].mass / 10.0 * sin(2 * result[i].angle * PI / 180) / G;
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
 	}
 	return result;
 }
@@ -53,17 +53,17 @@ jumper* nextgen(jumper arr[], int len, int location) {
 int main() {
 	constexpr int n = 1024;
 	srand(time(NULL));
-	jumper* jumpers = (jumper*)malloc(sizeof(jumper) * n);
+	jumper* jumpers = new jumper[n];
 	int location = rand() % 10000 + 100;
 	cout << "location is: " << location << "m" << endl;
 	for (int i = 0; i < n; i++) {
 		jumpers[i].mass = rand() % 80 + 10;
-		jumpers[i].angle = (rand() % 900);
-		jumpers[i].speed = (rand() % 1000000) + 1;
-		jumpers[i].location = jumpers[i].speed / jumpers[i].mass / 10.0 * jumpers[i].speed / jumpers[i].mass / 10.0 * sin(2 * jumpers[i].angle * PI / 180) / G;
+		jumpers[i].angle = (rand() % 90);
+		jumpers[i].speed = (rand() % 10000) + 1;
+		jumpers[i].location = jumpers[i].speed / jumpers[i].mass * jumpers[i].speed / jumpers[i].mass * sin(2 * jumpers[i].angle * PI / 180) / G;
 	}
 	for (int half = n / 2; half != 0; half /= 2) {
-		jumper* nextjumpers = (jumper*)malloc(sizeof(jumper) * half);
+		jumper* nextjumpers = new jumper[half];
 		for (int i = 0; i < half; i++) {
 			int j;
 			int index;
@@ -83,8 +83,9 @@ int main() {
 			nextjumpers[i] = jumpers[index];
 			jumpers[index].location = -1;
 		}
-		jumper* jumpers = (jumper*)malloc(sizeof(jumper) * half);
-		jumpers = nextgen(nextjumpers, half, location);
+		delete[] jumpers;
+		jumper* jumpers = nextgen(nextjumpers, half, location);
+		delete[] nextjumpers;
 		double x, y;
 		x = y = 0.0;
 		for (int i = 0; i < half; i++) {
@@ -92,13 +93,13 @@ int main() {
 			if (jumpers[i].mass == 0) {
 				continue;
 			}
-			double maxt = 2 * sin(jumpers[i].angle * PI / 1800) / G * jumpers[i].speed / jumpers[i].mass;
+			double maxt = 2 * sin(jumpers[i].angle * PI / 180) / G * jumpers[i].speed / jumpers[i].mass;
 			for (int t = 0; t <= maxt; t++) {
-				x = t * cos(jumpers[i].angle * PI / 1800) * jumpers[i].speed / jumpers[i].mass;
-				y = t * sin(jumpers[i].angle * PI / 1800) * jumpers[i].speed / jumpers[i].mass - G * t * t / 2;
+				x = t * cos(jumpers[i].angle * PI / 180) * jumpers[i].speed / jumpers[i].mass;
+				y = t * sin(jumpers[i].angle * PI / 180) * jumpers[i].speed / jumpers[i].mass - G * t * t / 2;
 				cout << "x: " << x << ", y: " << y << '\r';
 			}
-			cout << endl << jumpers[i].location << endl;
+			cout << endl;
 		}
 	}
 	if (location < jumpers[0].location) {
@@ -111,7 +112,8 @@ int main() {
 		cout << "정확하게 도착했습니다!" << endl;
 	}
 	cout << "질량: " << jumpers[0].mass << "kg" << endl;
-	cout << "각도: " << jumpers[0].angle / 10.0 << "도" << endl;
+	cout << "각도: " << jumpers[0].angle << "도" << endl;
 	cout << "속도: " << jumpers[0].speed / jumpers[0].mass << "m/s" << endl;
+	delete[] jumpers;
 	return 0;
 }
