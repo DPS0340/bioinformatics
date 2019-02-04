@@ -1,5 +1,6 @@
 #include <iostream>
 #include <cmath>
+#include <ctime>
 
 using namespace std;
 
@@ -13,98 +14,126 @@ struct jumper {
 	int location;
 };
 
-int abs(int a, int b) {
+double abs(double a, double b) {
 	return a > b ? a - b : b - a;
 }
 
 jumper* nextgen(jumper arr[], int len, int location) {
-	jumper* result = (jumper*)malloc(sizeof(jumper) * len);
-	for(int i=0;i<len;i++) {
-		if(arr[i].location < location) {
-			result[i].angle = arr[i].angle | arr[rand() % len].angle;
-		} else {
-			result[i].angle = arr[i].angle & arr[rand() % len].angle;
+	jumper* result = new jumper[len];
+	for (int i = 0; i < len; i++) {
+		int j;
+		int index;
+		for (j = 0; j < len * 2; j++) {
+			if (arr[j].location != -1) {
+				index = j;
+				break;
+			}
 		}
-		if(arr[i].location < location) {
-			result[i].mass = arr[i].mass | arr[rand() % len].mass;
-		} else {
-			result[i].mass = arr[i].mass & arr[rand() % len].mass;
+		for (; j < len * 2; j++) {
+			if (arr[j].location != -1) {
+				if (abs(arr[j].location, location) < abs(arr[index].location, location)) {
+					index = j;
+				}
+			}
 		}
-		if(arr[i].location < location) {
-			result[i].speed = arr[i].speed | arr[rand() % len].speed;
-		} else {
-			result[i].speed = arr[i].speed & arr[rand() % len].speed;
+		result[i] = arr[index];
+		arr[index].location = -1;
+	}
+	for (int i = 0; i < len; i++) {
+		if (result[i].location < location) {
+			result[i].mass = result[rand() % len].mass & result[rand() % len].mass;
 		}
-		if(result[i].mass == 0) {
-			result[i].mass = rand() % 70 + 30;
+		else {
+			result[i].mass = result[rand() % len].mass | result[rand() % len].mass;
 		}
-		if(result[i].speed == 0) {
-			result[i].speed = rand() % 1000;
+		if (result[i].mass == 0) {
+			result[i].mass = rand() % 95 + 5;
 		}
-		result[i].location = result[i].speed / result[i].mass / 10.0 * result[i].speed / result[i].mass / 10.0 * sin(2*result[i].angle * PI / 180) / G; 
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
+		if (result[i].location < location) {
+			result[i].speed = result[rand() % len].speed | result[rand() % len].speed;
+		}
+		else {
+			result[i].speed = result[rand() % len].speed & result[rand() % len].speed;
+		}
+		if (result[i].speed == 0) {
+			result[i].speed = (rand() % 1000000) + 100;
+		}
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
+		if (rand() % 50 == 0) {
+			int flag = rand() % 5;
+			if (flag == 0) {
+				result[i].angle = result[rand() % len].angle;
+			}
+			else if (flag == 1) {
+				result[i].mass = result[i].angle | result[rand() % len].mass;
+			}
+			else if (flag == 2) {
+				result[i].speed = result[i].angle | result[rand() % len].speed;
+			}
+			else if (flag == 3) {
+				result[i].mass = result[i].angle & result[rand() % len].mass;
+			}
+			else if (flag == 4) {
+				result[i].speed = result[i].angle & result[rand() % len].speed;
+			}
+		}
+		if (result[i].mass == 0) {
+			result[i].mass = rand() % 95 + 5;
+		}
+		if (result[i].speed == 0) {
+			result[i].speed = (rand() % 1000000) + 100;
+		}
+		result[i].location = result[i].speed / result[i].mass * result[i].speed / result[i].mass  * sin(2 * result[i].angle * PI / 180) / G;
 	}
 	return result;
 }
 
 int main() {
-	constexpr int n = 500;
+	int n = 1024 * 8;
 	srand(time(NULL));
-	jumper* jumpers = (jumper*)malloc(sizeof(jumper) * n);
-	int location = rand() % 10000 + 100;
-	cout << "location is: " << location << endl;
-	for(int i=0;i<n;i++) {
-		jumpers[i].mass = rand() % 80 + 10;
-		jumpers[i].angle = (rand() % 900);
-		jumpers[i].speed = (rand() % 1000000) + 1;
-		jumpers[i].location = jumpers[i].speed / jumpers[i].mass / 10.0 * jumpers[i].speed / jumpers[i].mass / 10.0 * sin(2*jumpers[i].angle * PI / 180) / G; 
+	jumper* jumpers = new jumper[n];
+	int location = rand() % 10000 + 5000;
+	cout << "목적지: " << location << "m" << endl;
+	for (int i = 0; i < n; i++) {
+		jumpers[i].mass = rand() % 95 + 5;
+		jumpers[i].angle = (rand() % 45) + 1;
+		jumpers[i].speed = (rand() % 1000000) + 100;
+		jumpers[i].location = jumpers[i].speed / jumpers[i].mass * jumpers[i].speed / jumpers[i].mass * sin(2 * jumpers[i].angle * PI / 180) / G;
 	}
-	for(int i=0;i<n;i++) {
-		cout << i + 1 << "'th jumper: " << endl;
-		if(location < jumpers[i].location) {
-			cout << jumpers[i].location - location << "만큼 더 갔습니다! " << endl;
+	for (int half = n / 2; half != 0; half /= 2) {
+		jumpers = nextgen(jumpers, half, location);
+		/*
+		double x, y;
+		x = y = 0.0;
+		for (int i = 0; i < half; i++) {
+			cout << i + 1 << "'th" << endl;
+			if (jumpers[i].mass == 0) {
+				continue;
+			}
+			double maxt = 2 * sin(jumpers[i].angle * PI / 180) / G * jumpers[i].speed / jumpers[i].mass;
+			for (int t = 0; t <= maxt; t++) {
+				x = t * cos(jumpers[i].angle * PI / 180) * jumpers[i].speed / jumpers[i].mass;
+				y = t * sin(jumpers[i].angle * PI / 180) * jumpers[i].speed / jumpers[i].mass - G * t * t / 2;
+				cout << "x: " << x << ", y: " << y << '\r';
+			}
+			cout << endl;
 		}
-		else if(location > jumpers[i].location) {
-			cout << location - jumpers[i].location << "만큼 덜 갔습니다! " << endl;
-		} else {
-			cout << "정확하게 도착했습니다!" << endl;
-		}
+		*/
 	}
-	for(int half = n / 2; half != 0; half /= 2) {
-		jumper* nextjumpers = (jumper*)malloc(sizeof(jumper) * half);
-		for(int i=0;i<half;i++) {
-			int j;
-			int index;
-			for(j=0;j<n;j++) {
-				if(jumpers[j].location != -1) {
-					index = j;
-					break;
-				}
-			}
-			for(;j<n;j++) {
-				if(jumpers[j].location != -1) {
-					if(abs(jumpers[j].location, location) < abs(jumpers[index].location, location)) {
-						index = j;
-					}
-				}
-			}
-			nextjumpers[i] = jumpers[index];
-			jumpers[index].location = -1;
-		}
-		jumpers = nextgen(nextjumpers, half, location);
-		for(int i=0;i<half;i++) {
-			cout << i + 1 << "'th jumper: " << endl;
-			if(location < jumpers[i].location) {
-				cout << jumpers[i].location - location << "만큼 더 갔습니다! " << endl;
-			}
-			else if(location > jumpers[i].location) {
-				cout << location - jumpers[i].location << "만큼 덜 갔습니다! " << endl;
-			} else {
-				cout << "정확하게 도착했습니다!" << endl;
-			}
-		}
+	cout << "목적지: " << location << "m" << endl;
+	if (location < jumpers[0].location) {
+		cout << jumpers[0].location - location << "만큼 더 갔습니다! " << endl;
 	}
-	cout << "질량: " << jumpers[0].mass << endl;
-	cout << "각도: " << jumpers[0].angle / 10.0 << endl;
-	cout << "속도: " << jumpers[0].speed << endl;
+	else if (location > jumpers[0].location) {
+		cout << location - jumpers[0].location << "만큼 덜 갔습니다! " << endl;
+	}
+	else {
+		cout << "정확하게 도착했습니다!" << endl;
+	}
+	cout << "질량: " << jumpers[0].mass << "kg" << endl;
+	cout << "각도: " << jumpers[0].angle << "도" << endl;
+	cout << "속도: " << jumpers[0].speed / jumpers[0].mass << "m/s" << endl;
+	delete[] jumpers;
 	return 0;
 }
