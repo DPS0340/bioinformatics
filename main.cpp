@@ -94,7 +94,6 @@ int main() {
 	srand(time(NULL));
 	jumper* jumpers = new jumper[n];
 	int location = rand() % 10000 + 5000;
-	cout << "목적지: " << location << "m" << endl;
 	for (int i = 0; i < n; i++) {
 		jumpers[i].mass = rand() % 95 + 5;
 		jumpers[i].angle = (rand() % 45) + 1;
